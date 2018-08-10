@@ -1,0 +1,106 @@
+<html>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<div id="app">
+  <img class="thb" style="float:right;" :src="captuer_now" >
+  <div v-for="item in list">
+    <div class="day">{{item.day}}</div>
+    <div class="image-list-container">
+      <div class="thb-box" v-for="data in item.data">
+          <img class="thb" :src="data.path" />
+          <span class="title">{{data.time}}</span>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  .image-list-container{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .image-list-container .thb-box{
+    width:144px;
+    height:96px;
+    position: relative;
+  }
+  .image-list-container .thb-box .title{
+    position: absolute;
+    bottom: 0;
+    background: rgba(255,255,255,0.4);
+  }
+  .day{
+    background:#528744;
+    overflow:hidden;
+  }
+  .full{
+    width:720px;
+    height:480px;
+  }
+  .thb{
+    width:144px;
+    height:96px;
+  }
+</style>
+<script>
+var app = new Vue({
+  el: '#app',
+  data: {
+    captuer_now: "",
+    list:[],
+  },
+  computed:{
+  },
+  methods:{
+    setList(list){
+      list.forEach((day) => {
+        const item = this.list.filter((item) => item.day == day)[0];
+        if(!item){
+          this.list.push(new DayImages(day))
+        }
+      })
+      this.list.sort((a,b) => a.day < b.day ? 1 : -1)
+      if(this.list.length){
+        this.list[0].update();
+      }
+    },
+    setDay(day, list){
+      list.sort((a,b) => a < b ? 1 : -1)
+
+    }
+  }
+})
+const update_captuer = () => {
+  app.captuer_now = `/now.jpg?${Date.now()}`;
+  setTimeout(update_captuer, 1000)
+}
+class DayImages{
+  constructor(day){
+    this.day = day;
+    this.data = [];
+    this.loading = false;
+  }
+  update(){
+    this.loading = true;
+    fetch_day(this.day).then(list => {
+      list.forEach(name => {
+        if(!this.data.filter((item) => item.name == name)[0]){
+          this.data.push(new TimeImage(this.day, name))
+        }
+      });
+      this.data.sort((a,b) => a.time < b.time ? 1 : -1)
+    }).finally(() => this.loading = false)
+  }
+}
+class TimeImage{
+  constructor(day, name){
+    this.path = `record/${day}/${name}`;
+    this.time = name.replace(/(\d+)-(\d+)-(\d+).jpg/, '$1:$2:$3');
+    this.name = name;
+  }
+}
+update_captuer()
+fetch("/list.json").then(a => a.json()).then((list) => app.setList(list))
+const fetch_day = (day) => fetch(`/list${day}.json`).then(a => a.json())
+
+</script>
+</html>

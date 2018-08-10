@@ -1,0 +1,28 @@
+# ユーザ設定のものは/etc/systemd/system以下に置くのがお作法っぽい。
+[Unit]
+Description = spy camera recorder
+After = local-fs.target remote-fs.target nss-lookup.target
+
+[Service]
+# 起動コマンド
+WorkingDirectory=/opt/dev/app
+ExecStart=/opt/dev/app/venv/bin/python3 recorder.py
+ExecStop=/bin/kill -TERM $MAINPID
+# サービスプロセスの起動完了の判定方法。
+# forking ExecStartで指定したコマンドからプロセスが一旦フォークし、親プロセス側が終了したときに、サービスが立ち上がったと判断
+Type=simple
+
+# サービスプロセス停止時の再起動条件（デフォルトは「no」）
+Restart=always
+
+User=pi
+Group=pi
+
+
+[Install]
+# poweroff.target   : runレベル0相当
+# rescue.target     : runレベル1相当
+# multi-user.target : runレベル2〜4相当
+# graphical.target  : runレベル5相当 + 「reboot.target」: runレベル6相当
+WantedBy=multi-user.target
+

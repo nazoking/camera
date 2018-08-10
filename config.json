@@ -1,0 +1,8 @@
+{
+    "sleep_sec":60,
+    "base_dir":"/var/lib/samba/public/record",
+    "log_dir":"/var/lib/samba/public/log",
+    "lock_dir":"/var/run/lock",
+    "capture":"/dev/shm/capture.jpg",
+    "need_capture_file":"/dev/shm/need_capture"
+}
